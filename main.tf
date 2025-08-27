@@ -1,11 +1,11 @@
 locals {
-  enabled = module.this.enabled
+  enabled = module.context.enabled
 }
 
 resource "aws_kinesis_stream" "default" {
   count = local.enabled ? 1 : 0
 
-  name                      = module.this.id
+  name                      = module.context.id
   shard_count               = var.stream_mode != "ON_DEMAND" ? var.shard_count : null
   retention_period          = var.retention_period
   shard_level_metrics       = var.shard_level_metrics
@@ -20,12 +20,12 @@ resource "aws_kinesis_stream" "default" {
     }
   }
 
-  tags = module.this.tags
+  tags = module.context.tags
 }
 
 resource "aws_kinesis_stream_consumer" "default" {
   count = local.enabled ? var.consumer_count : 0
 
-  name       = format("%s-consumer-%s", module.this.id, count.index)
+  name       = format("%s-consumer-%s", module.context.id, count.index)
   stream_arn = try(aws_kinesis_stream.default[0].arn, null)
 }
